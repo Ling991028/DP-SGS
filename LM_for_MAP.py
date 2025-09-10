@@ -19,12 +19,11 @@ fwd = configs.fwd
 ex_mat = configs.ex_mat
 
 
-
 def AnJ(x, L_sqrt, k):
     '''
     :param k: Coefficient for adjusting the relative weighting between prior and likelihood
     :return: The A term in equation (6.7) and its corresponding first derivative J,
-             where internal derivatives are approximated using the Jacobian matrix
+         where internal derivatives are approximated using the Jacobian matrix
     '''
     f1 = fwd.solve_eit(ex_mat, step, perm=x, parser="std")
     f_x = f1.v
@@ -32,8 +31,8 @@ def AnJ(x, L_sqrt, k):
     f_x[f_x < 0] = 0
     f_x = f_x.reshape(-1, 1)
     jac = f1.jac
-    A = np.vstack((k * lam_sqrt * f_x, 1/k * L_sqrt @ x.reshape(-1,1))).reshape(-1, 1)
-    J = np.vstack((k * lam_sqrt * jac, 1/k * L_sqrt))
+    A = np.vstack((k * lam_sqrt * f_x, 1 / k * L_sqrt @ x.reshape(-1, 1))).reshape(-1, 1)
+    J = np.vstack((k * lam_sqrt * jac, 1 / k * L_sqrt))
     return A, J
 
 def B(y, x0, L_sqrt, k):
@@ -42,12 +41,11 @@ def B(y, x0, L_sqrt, k):
     '''
     return np.vstack((k * lam_sqrt * y.reshape(-1,1), 1/k * L_sqrt @ x0.reshape(-1,1))).reshape(-1, 1)
 
-def LM_MAP(y, x0, x_initial, L_sqrt, maxiter=10, tol=1e-8):
+def LM_MAP(y, x0, x_initial, L_sqrt, maxiter=10):
     '''
     Solve for MAP, algorithm reference corresponds to Section 6.2
     :return: x -- MAP solution
              Q -- Q matrix obtained from QR decomposition of the Jacobian matrix J corresponding to the forward process of x
-             k -- Extract the k value used in LM_MAP to maintain consistency in adjusting the relative weighting between prior and likelihood throughout the algorithm, inherited for subsequent RTO methods
              Thin-QR decomposition is used
     '''
     # Parameters required for LM
@@ -58,7 +56,7 @@ def LM_MAP(y, x0, x_initial, L_sqrt, maxiter=10, tol=1e-8):
     w_down = 0.5
     gamma_0 = 0.001
     gamma = 0.001
-    x = x_initial.reshape(-1,1)
+    x = x_initial.reshape(-1, 1)
     b = B(y, x0, L_sqrt, 1)
     # Update step size adjustment
     eta = 1
@@ -94,7 +92,7 @@ def LM_MAP(y, x0, x_initial, L_sqrt, maxiter=10, tol=1e-8):
         A_new, J_new = AnJ(x_new.flatten(), L_sqrt, k)
         residual_new = A_new - b
         residual_new[0:208] = - residual_new[0:208]
-        l_new = 1/2 * np.linalg.norm(residual_new) ** 2
+        l_new = 1 / 2 * np.linalg.norm(residual_new) ** 2
         r = - 2 * (l - l_new) / (np.dot(dx.T, g))
         if r < u0:
             x = x
@@ -111,7 +109,7 @@ def LM_MAP(y, x0, x_initial, L_sqrt, maxiter=10, tol=1e-8):
         elif gamma < gamma_0:
             x = x_new
             gamma = 0
-        # print("iter:", i, "l:", l, "l_new:", l_new, "r:", r, "gamma:", gamma)
+        print("iter:", i, "l:", l, "l_new:", l_new, "r:", r, "gamma:", gamma)
         x = np.clip(x, 0, 2.0)
         eta = eta - del_eta
 

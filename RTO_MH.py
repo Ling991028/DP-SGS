@@ -16,7 +16,7 @@ import numpy as np
 import configs
 import cv2
 
-from LM_for_MAP import LM_MAP,AnJ,B
+from LM_for_MAP import LM_MAP, AnJ, B
 from LM_for_RTO import LM_RTO
 import matplotlib.pyplot as plt
 
@@ -154,7 +154,11 @@ if __name__ == "__main__":
     cov = cov_for_x(mesh_obj)
     L = np.linalg.inv(cov)
 
-    L_sqrt = np.linalg.cholesky(L) # Calculate the matrix square root in equation (6.7)
+    eigenvalues, eigenvectors = np.linalg.eig(L)
+    D_sqrt = np.diag(np.sqrt(eigenvalues))
+    L_sqrt = np.dot(np.dot(eigenvectors, D_sqrt), np.linalg.inv(eigenvectors))
+
+    # L_sqrt = np.linalg.cholesky(L) # Calculate the matrix square root in equation (6.7)
 
     while True:
         seed = int(time.time())
@@ -181,20 +185,20 @@ if __name__ == "__main__":
 
     x_initial = np.ones_like(x_real) + 0.05 * np.random.randn(x_real.size)
 
-    x_map,Q_map,k_map = LM_MAP(y, x0, x_initial, L_sqrt) # Calculate the value of MAP
+    x_map, Q_map, k_map = LM_MAP(y, x0, x_initial, L_sqrt) # Calculate the value of MAP
 
     b = B(y, x0, L_sqrt, k_map) # The b term in equation (6.7) corresponding to MAP, used for calculating the acceptance rate at each step
 
     x = x_map
 
-    N = 50
+    N = 5
     acc_rate = 0 # Overall sample acceptance rate for the entire iteration
     X = np.zeros((len(x),N))
 
     # RT0-MH
     for n in tqdm(range(N), desc='Overall Iterations'):
         while True:
-            x_new,converge = LM_RTO(y, x0, Q_map, x_map, L_sqrt, k_map)
+            x_new,converge = LM_RTO(y, x0, Q_map, x_map, L_sqrt, k_map, maxiter=20)
             if converge == 1:
                 break
         alpha = np.random.rand()
@@ -210,7 +214,6 @@ if __name__ == "__main__":
     print('acc_rate:',acc_rate)
 
     x_recon = np.mean(X,axis=1)
-
 
     # Plot
     pts = mesh_obj['node']

@@ -5,10 +5,8 @@ LM_RTO: Use Levenberg-Marquardt nonlinear least squares optimization to solve RT
 import numpy as np
 import configs
 
-
 lam = 10000
 lam_sqrt = np.sqrt(lam)
-
 
 n_el, h0 = configs.n_el, configs.h0
 background = configs.background
@@ -19,14 +17,12 @@ mesh_obj, el_pos = configs.mesh_obj, configs.el_pos
 fwd = configs.fwd
 ex_mat = configs.ex_mat
 
-
 def AnJ(x, L_sqrt, k):
     f1 = fwd.solve_eit(ex_mat, step, perm=x, parser="std")
     f_x = f1.v
     f_x = f_x + np.random.randn(208) * (np.max(f_x) * 2e-4)
     f_x[f_x < 0] = 0
     f_x = f_x.reshape(-1, 1)
-
     jac = f1.jac
     A = np.vstack((k * lam_sqrt * f_x, 1/k * L_sqrt @ x.reshape(-1,1))).reshape(-1, 1)
     J = np.vstack((k * lam_sqrt * jac, 1/k * L_sqrt))
@@ -37,8 +33,7 @@ def B(y, x0, sigma, L_sqrt, k):
     B1 = sigma
     return B0 + B1
 
-
-def LM_RTO(y, x0, Q, x_initial, L_sqrt, k, maxiter=20, tol=1e-8):
+def LM_RTO(y, x0, Q, x_initial, L_sqrt, k, maxiter=20):
     u0 = 0
     u_low = 0.25
     u_high = 0.75
@@ -51,7 +46,7 @@ def LM_RTO(y, x0, Q, x_initial, L_sqrt, k, maxiter=20, tol=1e-8):
     b = B(y, x0, sigma, L_sqrt, k)
     alpha = 1
     del_alpha = alpha / (maxiter + 1)
-    eta = 0.005 # Convergence threshold value, adjust as needed. Smaller eta requires more iterations
+    eta = 0.05
     for i in range(maxiter):
         A, J = AnJ(x.flatten(), L_sqrt, k)
         res = A - b
@@ -69,7 +64,9 @@ def LM_RTO(y, x0, Q, x_initial, L_sqrt, k, maxiter=20, tol=1e-8):
         res_new[0:208] = - res_new[0:208]
         residual_new = Q.T @ (res_new)
         l_new = 1/2 * np.linalg.norm(residual_new) ** 2
+
         print("l_new:", l_new)
+
         r = - 2 * (l - l_new) / (np.dot(dx.T, g))
         if r < u0:
             x = x
@@ -85,7 +82,9 @@ def LM_RTO(y, x0, Q, x_initial, L_sqrt, k, maxiter=20, tol=1e-8):
             gamma = w_down * gamma
         elif gamma < gamma_0:
             x = x_new
-
+            gamma = 0
+        # print("iter:", i, "l:", l, "l_new:", l_new, "r:", r, "gamma:", gamma)
+        # x = np.clip(x, 0, 2.0)
         alpha = alpha - del_alpha
 
     x = np.clip(x, 0, 2.0)
@@ -94,6 +93,6 @@ def LM_RTO(y, x0, Q, x_initial, L_sqrt, k, maxiter=20, tol=1e-8):
     res[0:208] = - res[0:208]
     residual = Q.T @ res
     l = 1 / 2 * np.linalg.norm(residual) ** 2
-    # print("l:", l)
+    print("l:", l)
     converge = int(l < eta)
     return x, converge

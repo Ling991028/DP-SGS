@@ -66,6 +66,7 @@ The following reconstruction results were obtained by running the respective alg
 Run the main DP-SGS algorithm to generate the reconstruction result:
 ```bash
 python DP-SGS.py
+```
 ![Reconstruction Result using DP-SGS](images/DP_SGS.png)
 *Figure 1: Reconstruction result obtained by the DP-SGS sampler.*
 
@@ -73,6 +74,7 @@ python DP-SGS.py
 Run the comparative GPnP-BM3D algorithm:
 ```bash
 python BM3D.py
+```
 ![Reconstruction Result using DP-SGS](images/GPnP_BM3D.png)
 *Figure 2: Reconstruction result obtained by the GPnP-BM3D sampler.*
 
@@ -80,5 +82,6 @@ python BM3D.py
 Run the comparative RTO-MH algorithm:
 ```bash
 python RTO_MH.py
+```
 ![Reconstruction Result using DP-SGS](images/RTO_MH.png)
 *Figure 3: Reconstruction result obtained by the RTO-MH sampler.*

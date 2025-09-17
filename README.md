@@ -5,7 +5,7 @@ focusing on the **Diffusion prior split Gibbs sampler (DP-SGS)** algorithm. For 
 implementations of the **Generative Plug-and-Play with BM3D Denoiser (GPnP-BM3D)** and **Randomize-then-Optimize Metropolis-Hastings (RTO-MH)** algorithms are also provided. 
 This code serves as a numerical case study for researchers interested in Bayesian inference and advanced sampling methods for computational inverse problems.
 
-## Environment and Dependencies
+## 🛠️ Environment and Dependencies
 
 The code has been developed and tested with **Python 3.8**. The following Python packages are required to run the algorithms:
 
@@ -34,7 +34,7 @@ The code has been developed and tested with **Python 3.8**. The following Python
 - **Shapely == 1.7.1** (For manipulation and analysis of geometric objects)
 - **setuptools == 63.4.1** (Packaging and distribution tool)
 
-## Project Structure and File Descriptions
+## 📁 Project Structure and File Descriptions
 
 The repository is organized as follows:
 
